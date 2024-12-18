@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog - Elysee Franchuk (kva55)</title>
+    <title>Contact - Elysee Franchuk (kva55)</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -42,37 +42,37 @@
         }
         main {
             margin: 2em auto;
-            max-width: 900px;
+            max-width: 800px;
             padding: 2em;
             background: #444;
             border-radius: 8px;
             box-sizing: border-box;
+            text-align: center;
         }
-        .blog-posts {
+        .contact-info {
+            margin: 1.5em auto;
             display: flex;
             flex-direction: column;
-            gap: 1.5em;
+            align-items: center;
         }
-        .blog-post {
+        .contact-info p {
             display: flex;
             align-items: center;
-            background-color: #555;
-            padding: 1em;
-            border-radius: 8px;
+            justify-content: center;
+            margin: 0.5em 0;
         }
-        .blog-post img {
-            width: 100px;
-            height: 100px;
-            border-radius: 8px;
-            margin-right: 1em;
+        .contact-info img {
+            width: 24px;
+            height: 24px;
+            margin-right: 0.5em;
         }
-        .blog-post-content h3 {
-            margin: 0 0 0.5em 0;
+        .contact-info a {
             color: #ffcc00;
+            text-decoration: none;
+            font-weight: bold;
         }
-        .blog-post-content p {
-            margin: 0;
-            color: #ddd;
+        .contact-info a:hover {
+            text-decoration: underline;
         }
         footer {
             background-color: #222;
@@ -84,7 +84,7 @@
 <body>
     <!-- Header -->
     <header>
-        <h1>Blog - Elysee Franchuk <span style="font-size: 0.8em;">(kva55)</span></h1>
+        <h1>Contact - Elysee Franchuk <span style="font-size: 0.8em;">(kva55)</span></h1>
     </header>
 
     <!-- Navigation -->
@@ -96,35 +96,19 @@
 
     <!-- Main Content -->
     <main>
-        <h2>Blog Posts</h2>
-        <div class="blog-posts" id="blog-posts"></div>
+        <h2>Get in Touch</h2>
+        <div class="contact-info">
+            <p>Email: <a href="mailto:elyseemafranchuk@gmail.com"> elyseemafranchuk@gmail.com</a></p>
+            <p>
+                <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn icon">
+                <a href="https://www.linkedin.com/in/elysee-franchuk" target="_blank">Connect with me on LinkedIn</a>
+            </p>
+        </div>
     </main>
 
     <!-- Footer -->
     <footer>
         <p>&copy; 2024 <strong>Elysee Franchuk</strong> (kva55). All rights reserved.</p>
     </footer>
-
-    <script>
-        fetch('posts.json')
-            .then(response => response.json())
-            .then(posts => {
-                const blogContainer = document.getElementById('blog-posts');
-                posts.forEach(post => {
-                    const postElement = document.createElement('div');
-                    postElement.classList.add('blog-post');
-                    postElement.innerHTML = `
-                        <img src="${post.image}" alt="${post.title} thumbnail">
-                        <div class="blog-post-content">
-                            <h3><a href="${post.link}" style="text-decoration: none; color: #ffcc00;">${post.title}</a></h3>
-                            <p>${post.summary}</p>
-                            <small>${post.date}</small>
-                        </div>
-                    `;
-                    blogContainer.appendChild(postElement);
-                });
-            })
-            .catch(error => console.error('Error loading posts:', error));
-    </script>
 </body>
 </html>

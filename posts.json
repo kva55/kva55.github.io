@@ -1,14 +1,16 @@
 [
     {
-        "title": "Post Title 1",
-        "date": "2024-06-01",
-        "link": "posts/post1.html",
-        "summary": "A quick summary of Post 1."
+        "title": "Apache Tomcat - Crash Cart - CVE-2024-54677",
+        "date": "2024-12-17",
+        "link": "posts/post1/post1.html",
+        "summary": "Overview of the uncontrollable resource consumption",
+        "image": "posts/post1/cat.webp"
     },
     {
         "title": "Post Title 2",
         "date": "2024-06-10",
         "link": "posts/post2.html",
-        "summary": "A quick summary of Post 2."
+        "summary": "A quick summary of Post 2.",
+        "image": "https://via.placeholder.com/100"
     }
 ]
