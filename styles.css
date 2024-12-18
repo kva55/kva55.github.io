@@ -1,0 +1,111 @@
+/* Global Styles */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #fff;
+    background-color: #333;
+}
+
+a {
+    text-decoration: none;
+    color: #fff;
+}
+
+a:hover {
+    color: #ccc;
+}
+
+/* Header Styles */
+
+.header {
+    background-color: #333;
+    padding: 20px;
+}
+
+.logo {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+/* Hero Section Styles */
+
+.hero {
+    background-image: linear-gradient(to bottom, #555, #444);
+    padding: 40px 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+/* About Section Styles */
+
+.about {
+    background-color: #555;
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+}
+
+h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* Call-to-Action Section Styles */
+
+.cta {
+    background-color: #555;
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+}
+
+h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.btn {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Footer Styles */
+
+.footer {
+    background-color: #333;
+    padding: 10px 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+}
