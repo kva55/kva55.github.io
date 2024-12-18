@@ -1,0 +1,14 @@
+[
+    {
+        "title": "Post Title 1",
+        "date": "2024-06-01",
+        "link": "posts/post1.html",
+        "summary": "A quick summary of Post 1."
+    },
+    {
+        "title": "Post Title 2",
+        "date": "2024-06-10",
+        "link": "posts/post2.html",
+        "summary": "A quick summary of Post 2."
+    }
+]

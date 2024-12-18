@@ -1,0 +1,24 @@
+<section class="blog">
+    <h2>Latest Blog Posts</h2>
+    <ul id="blog-posts"></ul>
+</section>
+
+<script>
+fetch('posts.json')
+    .then(response => response.json())
+    .then(posts => {
+        const blogContainer = document.getElementById('blog-posts');
+        posts.forEach(post => {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `
+                <a href="${post.link}">
+                    <strong>${post.title}</strong> <br>
+                    <small>${post.date}</small> <br>
+                    <span>${post.summary}</span>
+                </a>
+            `;
+            blogContainer.appendChild(listItem);
+        });
+    })
+    .catch(error => console.error('Error loading posts:', error));
+</script>
