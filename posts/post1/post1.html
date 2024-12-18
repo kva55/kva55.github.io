@@ -105,6 +105,10 @@
             margin: 1em auto;
             display: block;
         }
+		a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -125,33 +129,64 @@
 		<h2>Apache Tomcat - CVE-2024-54677 (Crash Cart) <span style="font-size: 0.8em;"></span></h2>
 		<img src="cat.webp" alt="Placeholder image">
         
+		<br>
+		<p>
+			I'd like to walk you through a vulnerability I identified in Apache Tomcat that can lead to a Denial-of-Service (DoS) attack. 
+			First, let me provide context on the type of vulnerability it is and the specific conditions required for exploitation on an Apache Tomcat system.
+		</p>
+		
+		<p> 
+			I'll also share some interesting data on the number of vulnerable Apache Tomcat servers that meet these conditions, highlighting the potential impact of this issue.
+		</p>
+		
+		<p>
+			Finally, I'll cover mitigations and remediations for this vulnerability. Although fixes were implemented starting from Apache Tomcat version 9.0.98, we'll review additional recommendations made by the Apache Development team to help ensure your systems are secure.
+		</p>
 
-        <h3>Heading Level 3</h3>
+        <h3>Is Uncontrolled Resource Consumption Dangerous?</h3>
+		<p> 
+			While it may seem like an obvious answer, the key factor in determining whether resource exhaustion occurs depends on where the consumption happens within the system. For example, internal functions may require dynamic allocation of memory that can lead to uncontrolled resource consumption scenarios.
+			<a href="https://cwe.mitre.org/data/definitions/400.html"> CWE-400</a> is the common weakness enumeration ID that details the term, conditions and mitigations for resource exhuastion.
+		</p>
+		<p>	
+			In order for this to occur, there must a lack of throttling, mismanagement of object references, or not closing the resource post processing. This means that the resource can either be tied up in memory, on disk, or as forms of compute like tasks and threads.
+			In other words, if you don't use it, you should lose it. There are legitimate reasons for maintaining information related to sessions, caching, and "intended functionality" but should be added part of the architecture and accounted for.
+		</p>
+		<p>
+			In situations where resource exhuastion is available to remote users, a significant risk of a DoS attack becomes apparent. If the resource exhuastion is behind authentication, e.g. users need to have an account to access the vulnerable function, the risk changes.
+			Then there's functions that are only accessible to localhost, which would require users to be local to where the system is. This type of attack is limited and generally has a low-risk.
+		</p>	
         
-        <p>Here is an example of an image with a caption:</p>
-        <blockquote>
-            "This is an example of a blockquote for citing something important."
-        </blockquote>
-
-        <h4>Code Example</h4>
-        <pre><code>// This is an example code block
-function greet() {
-    console.log("Hello, world!");
-}
-greet();</code></pre>
-        <p>Inline code example: <code>console.log("Hello, world!");</code></p>
-
-        <h4>Lists</h4>
+		<h3>Vulnerability Identification</h3>
+		<p>
+			This vulnerability was first discovered in the carts.jsp program, which is included in Apache Tomcat's examples. This example program can be enabled during the installation process or by configuring it separately. However, by default, it is disabled to prevent unauthorized access.
+			For testing, I ended up modifying this file:
+			
+			<code> <tomcat>/webapps/manager/META-INF/context.xml</code> so that my remote machine could interact with the examples directory.
+			
+		</p>
+		
+		<img src="apache_1.png" alt="Placeholder image">
+		
+		<p> With the carts.jsp program enabled, an additional layer of vulnerability was introduced. Specifically, the lack of adequate input validation made it possible for malicious inputs to bypass intended limits. The good news is that, without this specifically being accessible to remote users the risk is relatively low. </p>
+		<p> 
+			The most significant concern lies in the fact that versions prior to 8.5.4 allow access to vulnerabilities such as CVE-2024-54677. With hundreds of Apache Tomcat instances running on outdated versions, many are susceptible to this issue and other more critical vulnerabilities.
+			The scope of CVE-2024-54677 is particularly interesting, affecting not only older versions (9.0.0.M1 through 9.9.97) but also earlier major releases (11.0.0-M1 through 11.0.1). Moreover, the fact that it affects even the first milestone release of version 10 (10.0.1-M1 through 10.1.33) indicates resource consumption for this type of interaction was not anticipated.
+		</p>
+		
+		<h3>Closing Thoughts</h3>
+		<p>
+			This vulnerability discovery serves as a valuable reminder of the resource exhaustion weaknesses that can exist within systems for decades. Historically, Apache Tomcat instances were vulnerable to this vulnerability due to inadequate access controls. However, modern versions of the software have introduced restrictions to localhost access which significantly reduces the risk of exploitation. 
+			On the other hand, internal non-internet facing systems often require customized access controls, which can introduce this vulnerability to systems with examples enabled.
+		</p>
+		
+		<h4>References</h4>
         <ul>
-            <li>Item 1</li>
-            <li>Item 2</li>
-            <li>Item 3</li>
+                <li>https://stackoverflow.com/questions/36703856/access-tomcat-manager-app-from-different-host</li>
+                <li>https://www.cve.org/CVERecord?id=CVE-2024-54677</li>
+                <li>https://lists.apache.org/thread/tdtbbxpg5trdwc2wnopcth9ccvdftq2n</li>
         </ul>
-        <ol>
-            <li>First item</li>
-            <li>Second item</li>
-            <li>Third item</li>
-        </ol>
+        
     </main>
 
     <!-- Footer -->
