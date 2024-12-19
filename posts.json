@@ -1,9 +1,9 @@
 [
     {
-        "title": "Apache Tomcat - Crash Cart - CVE-2024-54677",
+        "title": "Apache Tomcat - CVE-2024-54677 (Crash Cart)",
         "date": "2024-12-18",
-        "link": "posts/post1/post1.html",
-        "summary": "Overview of CVE-2024-54677 and uncontrollable resource consumption",
+        "link": "posts/post1/apache_tomcat-CVE-2024-54677.html",
+        "summary": "Overview of CVE-2024-54677",
         "image": "posts/post1/cat.webp"
     }
 ]
