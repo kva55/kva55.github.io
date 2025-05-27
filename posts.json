@@ -1,5 +1,12 @@
 [
-    {
+	{
+        "title": "Achieving RCE from Forged Requests",
+        "date": "TBA",
+        "link": "posts/post2/coming_soon.html",
+        "summary": "How CVE-2025-12345 can be used to get RCE",
+        "image": "posts/post2/json_pic.png"
+    },
+	{
         "title": "Apache Tomcat - CVE-2024-54677 (Crash Cart)",
         "date": "2024-12-18",
         "link": "posts/post1/apache_tomcat-CVE-2024-54677.html",
