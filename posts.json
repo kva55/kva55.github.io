@@ -1,6 +1,6 @@
 [
 	{
-        "title": "How Froged REquests Can Lead to RCE",
+        "title": "How Forged Requests Can Lead to RCE",
         "date": "2025-07-15",
         "link": "posts/post2/csrf-to-rce.html",
         "summary": "CSRF Vulnerability analysis for Tiny File Manager v2.6",
