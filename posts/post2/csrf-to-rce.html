@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elysee Franchuk (kva55)</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #222;
+            padding: 1em 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #444;
+            padding: 0.5em 0;
+        }
+        nav a {
+            color: #ddd;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            margin: 0 0.5em;
+            background-color: #555;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #666;
+        }
+        main {
+            margin: 2em auto;
+            max-width: 800px;
+            padding: 2em;
+            background: #444;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        h2, h3, h4 {
+            color: #ffcc00;
+        }
+        p {
+            line-height: 1.6;
+            margin: 1em 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+        pre {
+            background-color: #222;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+            color: #ddd;
+        }
+        code {
+            font-family: 'Courier New', monospace;
+            background-color: #555;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            color: #ffcc00;
+        }
+        blockquote {
+            border-left: 4px solid #ffcc00;
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background-color: #555;
+            color: #ddd;
+        }
+        ul, ol {
+            margin: 1em 0;
+            padding-left: 1.5em;
+        }
+        ul li, ol li {
+            margin: 0.5em 0;
+        }
+		.img2 {
+            max-width:90%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1em auto;
+            display: block;
+        }
+		a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
+        footer {
+            background-color: #222;
+            text-align: center;
+            padding: 1.5em 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1><span style="font-size: 0.8em;">Elysee Franchuk (kva55)</span></h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="/index.html">About</a>
+        <a href="/blog.html">Blogs</a>
+        <a href="/contact.html">Contact</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <h2>How Forged Requests Can Lead to RCE</h2>
+		
+        <!-- <h3>Heading Level 3</h3> -->
+        <img src="json_pic2.png" alt="Placeholder image" style="width: 70%; display: block; margin: 0 auto;">
+        
+		<br>
+		<h3> Forging Requests</h3>
+		<p>
+			Cross-Site Request Forgery is a vulnerability that takes form in many ways, but the underlying issue is the same. This occurs when there's lacking controls on requests, meaning the receiving server cannot tell the difference between tampered and legitimate requests.
+			There's many articles and resources that cover CSRF; however, I'll be covering vulnerabilities I discovered in an opensource application, and the challenges web browser protections pose when attempting similar exploits. 
+		</p>
+		
+		<p>
+			With that, I recieved written permission that the stated vulnerabilities can be disclosed. Steps have been taken to responsibly disclose the findings to the developers.
+		<p/>
+		
+		<img src="l32oEMRmIg.png" alt="Placeholder image" class="img2">
+		
+		<p>
+			The testing I performed was on Tiny File Manager, which can be found <a href="https://github.com/prasathmani/tinyfilemanager"> here </a> and is simple file manager that is used to upload and share files. 
+		<p/>
+		
+		<p>
+			Before we jump into bypassing browser protections, lets take a look at a couple of the requests that are vulnerable to CSRF within Tiny File Manager.
+		</p>
+		
+		<img src="i0HGaoBnUh.png" alt="Placeholder image" class="img2">
+		
+		<p>
+			Above we have a POST request containing some parameters in the post body. Highlighted is the "token" parameter which has the CSRF token value omitted.
+		</p>
+		
+		<img src="9CiyVna9vE.png" alt="Placeholder image" class="img2">
+		
+		<p>
+			Now, you can see when the request is processed, the filename is changed. This is particularly useful to an attacker because depending on the filename, the web server can process the file differenty. The main file "index.php" contains the source code for the application. 
+			This means that if you browse to the php resource, the entire source code would not be disclosed and only the rendered client-side output. Any backend code would still work, but would not appear client-side.
+		</p>
+		
+		<h3> Identifying The Application Targets</h3>
+		<p>
+			We identified a request that can change filenames, and this is useful since "index.php" contains all the web application credentials.
+			we can immediately change the index.php to a readable format to obtain the username and password for the admin account. However, that would be destructive to the web application. Even if we retreive the credentials, we would be leaving the server in a DoS (Denial of Service) condition.
+		<p>
+		
+		<img src="BZMOy5tNB7.png" alt="Placeholder image" class="img2">
+		
+		<p>
+			The above screenshot shows the source code is disclosed when we browse to "index.txt".
+		</p>
+		
+		<img src="Cu1GNNjIKR.png" alt="Placeholder image" class="img2">
+		
+		<p>
+			Consequently, we no longer have access to the web application.
+		</p>
+		
+		<p>
+			We'll need to take a more careful approach in developing an exploit. I identified another function within the web application that was vulnerable to CSRF. When attempting to copy files, we have a couple options.
+		</p>
+		
+		<img src="svMoaxLMng.png" alt="Placeholder image" class="img2">
+		
+		The Tiny File Manager dashboard above has two areas selected, labelled as  1 and 2. Both these buttons allow to copy files, however label 1 does it in a GET request.
+		
+		<img src="vaReU4F44e.png" alt="Placeholder image" class="img2">
+		<p>
+			We can see by intercepting the request to copy the file, the request is sent in a GET request with no "token" parameter by default. This means, that if we send this request in a link, the file will automatically be copied if the user clicking it is authenticated. The default directory "data" in the web server root can have files copied to it instead.
+		</p>
+		
+		<p> The entire GET payload can be seen here:  <code> index.php?p=data&copy=index.php </code></p>
+		
+		<img src="JiCI6aUppF.png" alt="Placeholder image" class="img2">
+		<p> We can send the GET request, and by doing so the file is successfully copied to the data directory</p>
+		
+		<h3> Chaining CSRFs </h3>
+		<p> Multiple functions were identified that lacked CSRF protections. Even if the SameSite attribute is set to strict, we could still attack these functions, albeit with more complex payloads and closer attention to sessions via popup windows and JavaScript focus() usage.
+		</p>
+		
+		<p> Sticking to an environment that doesn't leverage the SameSite attribute, we need following conditions. </p>
+		
+		<ol>
+		<li>Send GET request to copy "index.php"</li>
+		<li>Issue a POST request to change the copied "index.php" to "index.txt" </li>
+		</ol>
+		
+		<img src="NBGMZoM22v.png" alt="Placeholder image" class="img2">
+		<p> With the help of your favorite GPT, we can throw some code together that will combine above steps. It's important to mention that an html button is required to be clicked initially to send the GET request. Without user interaction, the popup will be blocked.
+			Likewise, if we leverage JavaScript, or any other method to send the initial GET request it will not work automatically.
+		</p>
+		
+		<img src="Z6VExZnuiF.png" alt="Placeholder image" class="img2">
+		<p> We can send one request, but when we try performing a GET and a POST request, the broswer blocks this. So we need some user interaction. </p>
+		
+		
+		<img src="first.png" alt="Placeholder image" class="img2">
+		<p> the leftmost side is the attacker server, containing the malicious HTML code. On the rightside is the authenticated admin session.</p>
+		
+		<img src="second.png" alt="Placeholder image" class="img2">
+		<p> Next, we see can see small window is open that redirects to the GET request payload.</p>
+		
+		<img src="third.png" alt="Placeholder image" class="img2">
+		<p> Finally, on the left window the website visible is the victim 10.0.0.5 host, containing the renamed index file. This is because the final POST request occured from the HTML file on our attacker host 10.0.0.6.</p>
+		
+		<img src="hashes.png" alt="Placeholder image" class="img2">
+		<p> Finally, we can access the hashes within index.php without destroying the website. </p>
+
+		<h3> What About Bypassing the SameSite Attribute? </h3>
+		<p> Some web applications and browsers will make CSRF attacks harder to pull off when issuing POST requests. That's not to say it's not worth it, but it might require some phishing and luck.</p>
+		<p> Lets use Microsoft Edge, since the above attack is defeated with that browser. </p>
+		
+		<ol>
+		<li>Send GET request to copy "index.php"</li>
+		<li>Open a new window for user to authenticate</li>
+		<li>The user <strong>will</strong> need to authenticate in this second window</li>
+		<li>The initiating window on the attacker server will then need to attempt the final POST request</li>
+		<ul><li>Additionally, since the attacker window does not know whether the authentication happens, it either:</li>
+		<li>Needs to automatically send the POST request after a specified amount of time or</li>
+		<li>Automatically send the request when the focus is switched to that window by the victim (pre-emptive)</li></ul>
+		</ol>
+		
+		<p> That's a lot of moving parts. Functionally, the difference is that there needs to be user authentication in a (maximized) popup window, and that the attackers need to make a judgement when to send the final POST request from the first window. </p>
+		
+		<img src="same_site1.png" alt="Placeholder image" class="img2">
+		<p> The above screenshot shows a popup after the initial GET request. We can see the fake "error" message after the button is clicked once. The second time button the button is clicked allows the popup window to signin. </p>
+		
+		<img src="same_site2.png" alt="Placeholder image" class="img2">
+		<p> The above image now shows if the attacker doesn't wait long enough, or the authentication never happens, that the exploit doesn't work and fails. Since the final POST request redirects the the web application, it no longer has a means to re-attempt the attack until the user visits the attacker site again. </p>
+		
+		<p> The PoC code for this attack is quite large, but to stay true to PoC or GTFO, below is the HTML code to perform the attack. </p>
+		<img src="code1.png" alt="Placeholder image" class="img2">
+		<img src="code2.png" alt="Placeholder image" class="img2">
+		<img src="code3.png" alt="Placeholder image" class="img2">
+		
+		<h3> From Entry Point to Root Shell </h3>
+		<p> Once the admin hash is obtained, it will need to be cracked. This hash is <a href="https://www.php.net/manual/en/function.password-hash.php"> bcrypt </a>, which is a bit of a pain to crack. We can either verify this by running the hash thought the tool "hashid" or by reading the <a href="https://tinyfilemanager.github.io/docs/pwd.html"> documentation.</a></p>
+		
+		<img src="hashid.png" alt="Placeholder image" class="img2">
+		
+		<p> Without getting into the basics of using hashcat, lets skip to the part where we crack it. We're assuming that it can be cracked. </p>
+		
+		<img src="shell1.png" alt="Placeholder image" class="img2">
+		<p> We are able to upload a basic PHP shell that will take an argument with the parameter "cmd". A useful resource for shells can be found <a href="https://www.revshells.com/"> here.</a> </p>
+		
+		<img src="shell2.png" alt="Placeholder image" class="img2">
+		<p> Finally, we are able issue the command <code> whoami; ip a </code>, and see that we are the root user. The internal IPv4 address is different because the server is running in docker. </p> 
+		
+		<img src="shell3.png" alt="Placeholder image" class="img2">
+		<p> As a final payload, we can upload a meterpreter elf binary, and run it with our minimal shell for an upgrade. </p>
+		
+		<h3> Final remarks </h3>
+		<p> Depending on the browser that is targeted, plus the password size of the admin user, there's lot of considerations to make for chaining these vulnerabilities together.
+			CSRF protections do exist on Tiny File Manager, however they are not consistently applied. From an assessment perspective, there's room for improvement, but this is an example of how CSRF can be attacked and chained that can result in the worst-case scenario. </p>
+		
+    </main>
+	
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Elysee Franchuk (kva55). All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,9 +1,9 @@
 [
 	{
-        "title": "Achieving RCE from Forged Requests",
-        "date": "TBA",
-        "link": "posts/post2/coming_soon.html",
-        "summary": "How CVE-2025-12345 can be used to get RCE",
+        "title": "How Froged REquests Can Lead to RCE",
+        "date": "2025-07-15",
+        "link": "posts/post2/csrf-to-rce.html",
+        "summary": "CSRF Vulnerability analysis for Tiny File Manager v2.6",
         "image": "posts/post2/json_pic.png"
     },
 	{
