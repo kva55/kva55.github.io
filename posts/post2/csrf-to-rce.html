@@ -236,7 +236,7 @@
 		<p> Firstly, how does the <a href="https://owasp.org/www-community/SameSite"> SameSite </a> attribute work? Well, there's 3 main flags.  When SameSite is set to None, it's kind of self-explanatory, in that there's no restrictions on cookies and where they're sent from. 
 			Lax is more lenient, but still blocks POST requests that are cross-origin. Finally, we have the strict flag. This setting blocks GET and POST requests cross-origin.</p>
 			
-		<p> Now that we have a high-lvel understanding of SameSite, we'll need the following steps to bypass lax.</p>
+		<p> Now that we have a high-lvel understanding of the SameSite attribute, we'll need the following steps to bypass lax.</p>
 		
 		<ol>
 		<li>Send GET request to copy "index.php"</li>
@@ -251,7 +251,7 @@
 		<p> That's a lot of moving parts. Functionally, the difference is that there needs to be user authentication in a (maximized) popup window, and that the attackers need to make a judgement when to send the final POST request from the first window. </p>
 		
 		<img src="same_site1.png" alt="Placeholder image" class="img2">
-		<p> The above screenshot shows a popup after the initial GET request. We can see the fake "error" message after the button is clicked once. The second time the button the button is clicked, a popup window appears that the target user needs to authenticate to. </p>
+		<p> The above screenshot shows a popup after the initial GET request. We can see the fake "error" message after the button is clicked once. The second time the button is clicked, a popup window appears that the target user needs to authenticate to. </p>
 		
 		<img src="same_site2.png" alt="Placeholder image" class="img2">
 		<p> The above image now shows if the attacker doesn't wait long enough, or the authentication never happens, that the exploit doesn't work and fails. Since the final POST request redirects to the web application, it no longer has a means to re-attempt the attack until the target user visits the attacker site again. </p>
