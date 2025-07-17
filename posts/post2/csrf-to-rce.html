@@ -234,7 +234,7 @@
 		<p> Lets use Microsoft Edge, since the above CSRF attack is easily mitigated by it. This is because Edge uses lax by default. </p>
 		
 		<p> Firstly, how does the <a href="https://owasp.org/www-community/SameSite"> SameSite </a> attribute work? Well, there's 3 main flags.  When SameSite is set to None, it's kind of self-explanatory, in that there's no restrictions on cookies and where they're sent from. 
-			Lax is more lenient, but still blocks POST requests that are cross-origin. Finally, we have the strict flag. This setting blocks most things cross origin.</p>
+			Lax is more lenient, but still blocks POST requests that are cross-origin. Finally, we have the strict flag. This setting blocks GET and POST requests cross-origin.</p>
 			
 		<p> Now that we have a high-lvel understanding of SameSite, we'll need the following steps to bypass lax.</p>
 		
