@@ -1,5 +1,12 @@
 [
 	{
+        "title": "Where ANSI-Escape Sequences and RCE Converges - CVE-2025-55754",
+        "date": "2025-10-28",
+        "link": "posts/post3/Apache_Tomcat-CVE-2025-55754.html",
+        "summary": "Weaponizing ANSI-Escape Injection on Apache Tomcat",
+        "image": "posts/post3/Ka9JLhsVR1.png.png"
+    },
+	{
         "title": "How Forged Requests Can Lead to RCE",
         "date": "2025-07-15",
         "link": "posts/post2/csrf-to-rce.html",
