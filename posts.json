@@ -1,6 +1,6 @@
 [
 	{
-        "title": "Where ANSI-Escape Sequences and RCE Converges",
+        "title": "Where ANSI-Escape Sequences and RCE Converge",
         "date": "2025-10-28",
         "link": "posts/post3/Apache_Tomcat-CVE-2025-55754.html",
         "summary": "Weaponizing ANSI-Escape Injection on Apache Tomcat (CVE-2025-55754)",
