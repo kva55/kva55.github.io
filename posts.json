@@ -4,7 +4,7 @@
         "date": "2025-10-28",
         "link": "posts/post3/apache_tomcat-cve-2025-55754.html",
         "summary": "Weaponizing ANSI-Escape Injection on Apache Tomcat",
-        "image": "posts/post3/Ka9JLhsVR1.png.png"
+        "image": "posts/post3/Ka9JLhsVR1.png"
     },
 	{
         "title": "How Forged Requests Can Lead to RCE",
