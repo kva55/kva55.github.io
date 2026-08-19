@@ -203,7 +203,7 @@
 		</br></br>
 		The OpenPLC can function on <a href="https://en.wikipedia.org/wiki/Modbus">modbus</a>, and for this project that is what I used. Modbus is a serial protocol when used for a PLC, with some different standards that span the OSI model.
 		<ol><ul>Serial-Based: <a href="https://en.wikipedia.org/wiki/RS-485">RS485</a> is a electrical signaling specification. By itself, it is not a protocol, which is where modbus rolls in. By using modbus over electrical signaling, we can actually perform serial communication over pure copper. (Okay, it sounded cooler in my head before I wrote it.)</ul>
-		<ul>TCP-Based: <a href="https://en.wikipedia.org/wiki/Modbus#Modbus_TCP">Modbus TCP</a> (Ethernet) on the otherhand does not operate over lines, but is encapsuated inside the ethernet frames and network packets. This is the typical ip and port 502 communication between PLCs.</ul>
+		<ul>TCP-Based: <a href="https://en.wikipedia.org/wiki/Modbus#Modbus_TCP">Modbus TCP</a> (Ethernet) on the otherhand does not operate over lines, but is encapsulated inside the ethernet frames and network packets. This is the typical ip and port 502 communication between PLCs.</ul>
 		</ol>
 		
 		</br>
@@ -227,7 +227,7 @@
 		By sending signals directly from the client device through the USB adapter, you will actually see the "RX" LED flash; likewise, when receiving communication from the master device, the "TX" LED should flicker.
 		
 		</br></br>
-		<b>note:</b> I think it is possible definitely possible to have MAX485-to-MAX485 communication without the need of a USB adapter; however, due to the time constraints and my lack of knowledge of OpenPLC, the USB was used.
+		<b>note:</b> I think it is definitely possible to have MAX485-to-MAX485 communication without the need of a USB adapter; however, due to the time constraints and my lack of knowledge of OpenPLC, the USB was used.
 		
 		</br></br>
 		Below are the images of the components used, which are the RS485-to-USB adapter, and the MAX485 chip. 
@@ -271,7 +271,7 @@
 		<img src="volt_div2.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
 		
 		</br></br>
-		The above image shows the standard voltage divider formular. On paper, the formula would give a perfect 3.33v output. In reality, this can fluctuate and change, and if underpowered can actually cause modbus data to never transmit if the signal doesn't pass the <a href="https://documentation.espressif.com/esp32_datasheet_en.pdf#?page=52">HIGH threshold, which is roughly 2.5v</a>.
+		The above image shows the standard voltage divider formula. On paper, the formula would give a perfect 3.33v output. In reality, this can fluctuate and change, and if underpowered can actually cause modbus data to never transmit if the signal doesn't pass the <a href="https://documentation.espressif.com/esp32_datasheet_en.pdf#?page=52">HIGH threshold, which is roughly 2.5v</a>.
 		</br></br>
 		I ended up taking a small deep dive into voltage dividers, since this kind of interested me for the project.
 		Because of how division works, you can change the resistors R1 and R2 with equal scales of 10, and always end up with 3.33v as the output, but the actual current will be different. As a quick example, with a 30kohm voltage divider, the speed at which the signal can reach the ESP32 is significantly slower than a 3kohm (kind of literally, as there's less resistence for the signal to pass through - more technically this is rise time by capacitance).
@@ -297,7 +297,7 @@
 		<li>Next, you assign local registers as <code>holdingRegisters[2]</code>, where the DHT11 sesnsor data will be stored. These can be scaled by 10 so it can be stored as an int.</li>
 		<li>Finally, when the master poll request is received, the <code>holdingRegisters[0]</code> and <code>holdingRegisters[1]</code> contents are transmitted to the PLC.
 		</ul>
-		</br> Simple enough, right? Well, it should be, but as with all things, stuff happens, and datatypes get mismatched, or weird COM port errors arise. In that event, here is how you can troubleshoot it. Below is a simple ESP32 prorgram that will send "Hello" to Radzio upon receiving a poll request.
+		</br> Simple enough, right? Well, it should be, but as with all things, stuff happens, and datatypes get mismatched, or weird COM port errors arise. In that event, here is how you can troubleshoot it. Below is a simple ESP32 program that will send "Hello" to Radzio upon receiving a poll request.
 		
 		<pre><code style="background-color: transparent; padding: 0; color: inherit; border-radius: 0;">
 		#include &lt;ModbusRTUSlave.h&gt;
@@ -336,11 +336,11 @@
 		</br></br>
 		<img src="radzio2.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
 		</br></br>
-		If everything is connected correctly on the hardware level, the screen should show up with decimal/hexidecimal data. Just make sure to click <code> File -> New</code>, otherwise it won't record any errors or successful polls. If the incorrect datatype is selected, you may get errors that should populate in the bottom of the GUI window.
+		If everything is connected correctly on the hardware level, the screen should show up with decimal/hexadecimal data. Just make sure to click <code> File -> New</code>, otherwise it won't record any errors or successful polls. If the incorrect datatype is selected, you may get errors that should populate in the bottom of the GUI window.
 		</br></br>
 		<img src="radzio3.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
 		</br></br>
-		The above image shows two registers, which was actually an earlier prototype I was working with. Later, I decided to multiply the data by ten so only one register was used per signal. But, if you can send DHT11 data and recieve it via radzio, it will work identically to how the PLC will query the RTU, so long as it's programmed to store the datatype.
+		The above image shows two registers, which was actually an earlier prototype I was working with. Later, I decided to multiply the data by ten so only one register was used per signal. But, if you can send DHT11 data and receive it via radzio, it will work identically to how the PLC will query the RTU, so long as it's programmed to store the datatype.
 		</br></br>
 		<pre><code style="background-color: transparent; padding: 0; color: inherit; border-radius: 0;">
 		
@@ -371,7 +371,7 @@
 		but if a particular process did need to calculate or compute something with the received RTU data, it would be done on an existing or new rung on the PLC.
 		</br></br>
 		The received data does need to store it, and this can be done by assigning variables within the ladder logic diagram. These are called Holding Registers, specifically reading represented with <code>%IW100</code>.
-		Essentially, we are storing them in memory of the PLC when reading from an RTU, and they can only be read from a physical pin. Since they are the datatype of int, it is a good idea at this point to send int data.
+		Essentially, we are storing them in memory of the PLC when reading from an RTU. Since they are the datatype of int, it is a good idea at this point to send int data.
 		</br></br>
 		An important distinction I might add is that the <code>%IW</code> registers are read only and different from others, such as <a href="https://old.autonomylogic.com/docs/2-3-input-output-and-memory-addressing/">Digital In, Digital Out, Analog In, etc</a>.
 		Normally, PLCs use <code>%IW</code> addresses to read local physical analog Input pins (like a 0-10V sensor wired to the board). However, OpenPLC takes the incoming Modbus RTU data and maps it to variables like <code>%IW100</code>. This allows the PLC to process the network-received data (serial or TCP-based) identically to how it would read a physical analog pin. This is distinct from being updated by a remote device that updates the coil directly.
