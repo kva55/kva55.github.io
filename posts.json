@@ -1,7 +1,7 @@
 [
 	{
         "title": "Integrating ESP32 RTU with OpenPLC via RS485 Modbus",
-        "date": "2026-09-19",
+        "date": "2026-08-19",
         "link": "posts/post4/Integrating ESP32 RTU with OpenPLC via RS485 Modbus.html",
         "summary": "Converting proprietary signals with an ESP32-based RTU for PLCs",
         "image": "posts/post4/Main_pic2.jpg"
