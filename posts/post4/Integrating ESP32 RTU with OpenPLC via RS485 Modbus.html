@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where ANSI-Escape Sequences and RCE Converges</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #333;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        background-color: #222;
+        padding: 1em 0;
+        text-align: center;
+    }
+    header h1 {
+        margin: 0;
+        font-size: 2em;
+    }
+    nav {
+        display: flex;
+        justify-content: center;
+        background-color: #444;
+        padding: 0.5em 0;
+    }
+    nav a {
+        color: #ddd;
+        text-decoration: none;
+        padding: 0.5em 1em;
+        margin: 0 0.5em;
+        background-color: #555;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    nav a:hover {
+        background-color: #666;
+    }
+    main {
+        margin: 2em auto;
+        max-width: 800px;
+        padding: 2em;
+        background: #444;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+    h2, h3, h4 {
+        color: #ffcc00;
+        margin: 1em 0;
+    }
+    p {
+        line-height: 1.6;
+        margin: 1em 0;
+    }
+    pre {
+        background-color: #222;
+        padding: 1em;
+        border-radius: 8px;
+        overflow-x: auto;
+        color: #ddd;
+    }
+    code {
+        font-family: 'Courier New', monospace;
+        background-color: #555;
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        color: #ffcc00;
+    }
+    blockquote {
+        border-left: 4px solid #ffcc00;
+        margin: 1em 0;
+        padding: 0.5em 1em;
+        background-color: #555;
+        color: #ddd;
+    }
+    ul, ol {
+        margin: 1em 0;
+        padding-left: 1.5em;
+    }
+    ul li, ol li {
+        margin: 0.5em 0;
+    }
+    footer {
+        background-color: #222;
+        text-align: center;
+        padding: 1.5em 0;
+    }
+    a {
+        color: #ffcc00;
+        text-decoration: none;
+    }
+
+    /* Image & Modal Styles */
+    img {
+        max-width: 60%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1em auto;
+        display: block;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    img:hover {
+        opacity: 0.95;
+    }
+    .img2 {
+        max-width: 90%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1em auto;
+        display: block;
+        cursor: pointer;
+    }
+    #imageModalOverlay {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+    #imageModalContent {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 4px;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        cursor: default;
+        margin: auto;
+    }
+</style>
+
+<!-- Global Modal Structure -->
+<div id="imageModalOverlay" onclick="closeGlobalModal()">
+    <img id="imageModalContent">
+</div>
+
+<!-- Global Image Zoom Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const images = document.querySelectorAll("main img");
+        const overlay = document.getElementById("imageModalOverlay");
+        const modalImg = document.getElementById("imageModalContent");
+
+        images.forEach(img => {
+            img.addEventListener("click", function(e) {
+                e.stopPropagation();
+                overlay.style.display = "flex";
+                modalImg.src = this.src;
+            });
+        });
+    });
+
+    function closeGlobalModal() {
+        document.getElementById("imageModalOverlay").style.display = "none";
+    }
+</script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Integrating ESP32 RTU with OpenPLC via RS485</h1>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="/index.html">About</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/contact.html">Contact</a>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <img src="Main_pic2.jpg" alt="Placeholder image" style="width: 140%; display: block; margin: 0 auto;">
+		
+		<h2>Building an ESP32 RTU and using modbus to communicate with OpenPLC.</h2>
+		
+        <p>This project started with a simple question: "How can my PLC receive temperature data from my DHT11 sensor?".
+		For anyone that ever dealt with an introductory robotics course, or tinkered around with an arduino will know it's quite easy to setup.
+		</br></br>
+		The DHT11 Sensor by itself has 4 connections, though, only 3 are used. These are the data, ground, and 3.3v pins. Hook that up to an arduino, initialize the pins, paste some simple code within the loop and viola, you can get a low-accuracy temperature and humidity data.
+		</br></br>
+		<img src="DHT11_pinout.jpg" alt="Placeholder image" style="width: 140%; display: block; margin: 0 auto;">
+		
+		</br></br> That was not that case for connecting to a PLC, and the reason might be surprising. That is because the DHT11 actually uses a <a href= "https://moodle.upm.es/en-abierto/pluginfile.php/47163/mod_page/content/10/DHT11.PDF"> single-wire 2-way proprietary protocol</a>.
+		In otherwords, while there are arduino libraries that can specifically interface with sensors using that protocol to read and write data, <a href="https://github.com/adafruit/DHT-sensor-library">such as with the adafruit DHT sensor library</a>, that information still needs to be understood and or processed by something that does not support it.
+		</br></br>
+		In industrial controls, there's a type technology called an <a href="https://en.wikipedia.org/wiki/Remote_terminal_unit">RTU (Remote Terminal Unit)</a>. While the actual definition can mean many different things, I will focus on this: an RTU can convert signals or data from one form into another. This allows for one process to understand what a proprietary data represents, and can have controls process and compute it.
+		<br></br>
+		At this point, an RTU can be a lot of things, but with two caveats:
+		<ol><li>Data Acquisition: It has to collect the signals/data that are required (so communicate via the protocol the sensor operates on)</li>
+		<li>Upstream Communication: It has to communicate to the controller, or PLC in this case.</il>
+		</ol>
+		
+		</br></br>
+		The OpenPLC can function on <a href="https://en.wikipedia.org/wiki/Modbus">modbus</a>, and for this project that is what I used. Modbus is a serial protocol when used for a PLC, with some different standards that span the OSI model.
+		<ol><ul>Serial-Based: <a href="https://en.wikipedia.org/wiki/RS-485">RS485</a> is a electrical signaling specification. By itself, it is not a protocol, which is where modbus rolls in. By using modbus over electrical signaling, we can actually perform serial communication over pure copper. (Okay, it sounded cooler in my head before I wrote it.)</ul>
+		<ul>TCP-Based: <a href="https://en.wikipedia.org/wiki/Modbus#Modbus_TCP">Modbus TCP</a> (Ethernet) on the otherhand does not operate over lines, but is encapsuated inside the ethernet frames and network packets. This is the typical port 502 communication between PLCs.</ul>
+		</ol>
+		
+		</br>
+		For this project, I decided I wanted a challenge and pursued RS485 communication. Before I document what components I purchased, serial-based modbus has transmission modes. While this isn't exactly groundbreaking, understanding this from the get-go will save some troubleshooting headaches.
+		<ul>
+		<li><strong><a href="https://www.modbus.org/file/secure/modbusoverserial.pdf#page=12">Modbus RTU</a>:</strong> Data is sent in binary or hexadecimal formats. It is possible to transmit complex data like <a href="https://simplymodbus.ca/learn-rtu.html#floats">32-bit floats</a>. (Unless you really know what you're doing, I suggest sticking to simpler data types, or you'll have fun with OpenPLC).</li>
+		<li><strong><a href="https://simplymodbus.ca/learn-ascii.html">Modbus ASCII</a>:</strong> Human-readable data.</li>
+		</ul>
+		
+		</br>
+		<h2>Modbus Architecture</h2>
+		Architecturally, modbus follows a client/master communication, regardless of what standard or transmission mode that is used.
+		The master device begins all communication, to which the client (or slave) can respond. The client does not start communications first, unless of course we force it!
+		
+		<br>
+		<h2> Testing by Breaking Standardization </h2>
+		The reason I mention about forcing non-standard communication is because I did so to verify my MAX485 was communicating and connected properly to the RS485-To-USB adapter.
+		By sending signals directly from the client device through the USB adapter, you will actually see the "RX" LED flash, and when receiving communication from the master, the "TX" LED.
+		
+		</br></br>
+		<b>note:</b> I think it is possible to have MAX485-to-MAX485 communication completely bypassing the USB requirement; however, due to the time constraints the USB was used.
+		
+		</br></br>
+		Below are the images of the components used, which are the RS485-to-USB adapter, and MAX485 chip. 
+		<div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin: 20px 0;">
+			<img src="usb_adapter.jpg" alt="RS485 to USB adapter" style="width: 45%; height: auto; display: block;">
+			<img src="max485_component.jpg" alt="MAX485 component module" style="width: 45%; height: auto; display: block;">
+		</div>
+		
+		</br>
+		<h2> How OpenPLC Will Be Used</h2>
+		The controller for this project is a Raspberry Pi running OpenPLC, an open-source PLC runtime. A deep dive into the core installation and configuration of OpenPLC is beyond the scope of this write-up.
+		
+		</br></br>
+		Instead, I am leveraging the foundational "Start/Stop" circuit demo provided by the OpenPLC developers in their <a href="https://www.youtube.com/watch?v=iC5s4CEiOB4">official tutorial video</a>. If you are new to the platform, that video is an excellent resource for 
+		understanding how to map physical GPIO pins to Ladder Logic. My project builds directly on top of that established framework, utilizing the same basic ladder logic structure and physical button layout as a baseline before introducing the serial and RTU communication.
+		
+		</br></br>
+		
+		<h2> Physical Addressing References </h2>
+		When working with OpenPLC, mapping any physical connections to registers or "coils" needs to be done via GPIO pins.
+		Much like an RTU translates signals from one format into another, the same needs to be done between physical GPIO pins, and what OpenPLC recognizes inputs and outputs based on the <a href="https://en.wikipedia.org/wiki/IEC_61131-3"> IEC 61131-3</a> Memory Addressing.
+		Raspberry pi physical addressing specifically for the OpenPLC project can be found <a href="https://old.autonomylogic.com/docs/2-4-physical-addressing/">here</a>, but other microcontrollers and computer addresses can be used similarly.
+		</br></br>
+		<img src="raspi_phy_addr.png" alt="Placeholder image" style="width: 140%; display: block; margin: 0 auto;">
+		</p>
+		
+		</br></br>
+		With that in mind, we can continue to the schematic of the project.
+		</br></br>
+		<h2> Electrical Diagram of All Components, Pinouts and Connections</h2>
+		<img src="ESP32_RTU_Electrical_Diagram.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		
+		</br></br>
+		<b>Note:</b> While the ESP32 unofficially supports connections for up to 5 volts, the MAX485 chip RO pin should be stepped down with a voltage divider whether connected to a Raspberry pi or ESP32. The ideal operational DO pin from should be 3.3V.
+		</br></br>
+		<img src="Main_pic3.jpg" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		The above image shows the voltage around 3.4v, which is slightly higher the max approved voltage.
+		<img src="volt_div_formula.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		<img src="volt_div2.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		
+		</br></br>
+		The above image shows the standard voltage divider formular. On paper, the formula would give a perfect 3.33v output. In reality, this can fluctuate and change, and if underpowered can actually cause modbus data to never transmit if the signal doesn't pass the HIGH threshold.
+		</br></br>
+		I ended up taking a small deep dive into voltage dividers, since this kind of interested me for the project.
+		Because of how division works, you can change the resistors R1 and R2 with different base-tens, and always end up with 3.33v as the output, but the actual current will be different. As a quick example, with a 30kohm voltage divider, the speed at which the signal can reach the ESP32 is significantly slower than a 3kohm (kind of literally, as there's less resistence for the signal to pass through).
+		</br></br>
+		So, Once again, voltage divider theory is beyond the scope of this project, but should ultimately be used to ensure safe operation of all components.
+		For headache-free ways to step down communication lines, here's an example of a <a href="https://www.sparkfun.com/sparkfun-logic-level-converter-bi-directional.html"> 3.3V to 5V Bi-Directional Logic Level Converter.</a>
+		
+		<h2> Building the Boilerplate for Modbus Communication </h2>
+		Before connecting the ESP32 to the PLC, I would recommend testing what is supposed to be sent, and whether it can be intercepted in the first place.
+		This rule is one I don't always follow right off the bat, but end up finding difficulty with getting something to work. This is probably called something more official, but the way I tested this modbus implementation was by using a proxy.
+		
+		<h3> Debugging the netcat way </h3>
+		We won't actually use netcat, but this is an opportunity to talk about how I troubleshooted web application exploits that required fine-tuning, that sometimes were modified or required post-flight interception.
+		Readers with web application exposure will immediately know what I'm referring to, such as setting up a simple netcat listener, then seeing what is is printed in the terminal when pointing the HTTP request to it.
+		</br></br>
+		Using the same principle, we can use a tool called <a href="https://en.radzio.dxp.pl/modbus-master-simulator/">Radzio! Modbus Master Simulator</a> to make poll requests, and see what data is sent from client devices via USB ports.
+		It is possible to do this with your standard Wireshark and USBCap, but it all depends on your approach and methodology.
+		
+		<h3> The First Modbus Request with an ESP32 RTU </h3>
+		Lets look at the <a href="github.com/CMB27/ModbusRTUSlave">ModbusRTUSlave</a> library. This library worked for my purposes, and it turned out to be finnicky to work with master-based libraries.
+		It could have been a compatibility issue too, but luckily this library had support for the ESP32.
+		<ul><li>First, you have the <code>modbus.poll()</code> in the loop, with the slave ID of 1.</li>
+		<li>Next, you assign local registers as <code>holdingRegisters[2]</code>, where the DHT11 sesnsor data will be stored. These can be scaled by 10 so it can be stored as an int.</li>
+		<li>Finally, when the master request is received, the <code>holdingRegisters[0]</code> and <code>holdingRegisters[1]</code> are sent to the PLC.
+		</ul>
+		</br> Simple enough, right? Well, it should be, but as with all things, stuff happens, and datatypes get mismatched, or weird COM port erros arise. In that event, here is how you troubleshoot it, and what you should see on the screen if you are sending a simple "Hello" to Radzio.
+		
+		<pre><code style="background-color: transparent; padding: 0; color: inherit; border-radius: 0;">
+		#include &lt;ModbusRTUSlave.h&gt;
+
+		#define RS485_DE_RE 5
+		#define RXD2 16
+		#define TXD2 17
+
+		// 3 holding registers to fit &quot;he&quot; &quot;ll&quot; &quot;o &quot;
+		uint16_t holdingRegisters[3] = {26725, 27756, 28448};
+
+		ModbusRTUSlave modbus(Serial2, RS485_DE_RE);
+
+		void setup() {
+		  Serial.begin(9600);
+
+		  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+
+		  // Link all 3 registers and start listening as Slave ID 1
+		  modbus.configureHoldingRegisters(holdingRegisters, 3);
+		  modbus.begin(1, 9600);
+
+		  Serial.println(&quot;Modbus Broadcasting &#039;Hello &#039;&quot;);
+		}
+
+		void loop() {
+		  // Continuously listen for Modbus requests and serve the array
+		  modbus.poll();
+		}
+		</code></pre>
+		
+		</br></br>
+		<img src="radzio1.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		Above shows the setup for Radzio. The baudrate and slave ID should be the same as in the ESP32 source code. Have everything else the same as in the screenshot.
+		</br></br>
+		<img src="radzio2.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		If everything is connected correctly on the hardware level, the screen should show up with some binary data. Just make sure to click <code> File -> New</code>, otherwise it won't record any errors or successful polls.
+		</br></br>
+		<img src="radzio3.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		The above image shows two registers, which was actually an earlier prototype I was working with before I decided to multiply the data by ten. But, if you can send DHT11 data and recieve it via radzio, it will work very similarly to how the PLC will query the RTU.
+		</br></br>
+		<pre><code style="background-color: transparent; padding: 0; color: inherit; border-radius: 0;">
+		
+		modbus.configureHoldingRegisters(holdingRegisters, 2);
+		
+		...
+		
+		float hum = dht.readHumidity();
+		float temp = dht.readTemperature();
+
+		...
+
+			  // Multiply by 10 and cast to integer (e.g., 21.2 -&gt; 212)
+			  holdingRegisters[0] = (uint16_t)(temp * 10.0);
+			  holdingRegisters[1] = (uint16_t)(hum * 10.0);
+
+			  Serial.print(&quot;Temp_10X: &quot;);
+			  Serial.print(holdingRegisters[0]);
+			  Serial.print(&quot; | Humid_10X: &quot;);
+			  Serial.println(holdingRegisters[1]);
+
+		...
+		</code></pre>
+		The above code snippet should work exactly the same way that the previous "hello" example did, minus HoldingRegisters array being a different size.
+		
+		<h2> Connecting the RTU to OpenPLC </h2>
+		I mentioned earlier that this project was built on the tutorial created by the OpenPLC team. Not much change actually had to be done to the ladder logic,
+		but if a particular process did need to calculate or compute something with the received RTU data, it would be done on an existing or new rung.
+		</br></br>
+		The received data does need to store it, and this can be done by assigning variables within the ladder logic diagram. These are called Holding Registers - Read (%IW100).
+		Essentially, we are storing them in memory of the PLC when reading from an RTU. Since they are the datatype of int, it is a good idea at this point to send int data.
+		</br></br>
+		An important distinction I might add is that the <code>%IW</code> registers that are read only from a physical pin, and physically different from others, such as <a href="https://old.autonomylogic.com/docs/2-3-input-output-and-memory-addressing/">Digital In, Digital Out, Analog In, etc</a>.
+		</br></br>
+		
+		<ul>
+		<li><strong>The Prefix (Location):</strong>
+			<ul>
+				<li><code>%I</code> - <strong>Input:</strong> This is Read-only data from a physical pin, analog sensor, or network poll.</li>
+				<li><code>%Q</code> - <strong>Output:</strong> Writeable data that is sent to a physical relay, LED, or client device.</li>
+				<li><code>%M</code> - <strong>Memory:</strong> Internal scratchpad memory used only within the ladder logic.</li>
+			</ul>
+		</li>
+		<li><strong>The Suffix (Size):</strong>
+			<ul>
+				<li><code>X</code> - <strong>Bit:</strong> Boolean, e.g. 1 or 0, or a push button.</li>
+				<li><code>B</code> - <strong>Byte:</strong> 8 bits.</li>
+				<li><code>W</code> - <strong>Word:</strong> 16 bits. e.g., a standard Modbus Holding Register.</li>
+				<li><code>D</code> - <strong>Double Word:</strong> 32 bits. e.g., floating-point math.</li>
+			</ul>
+		</li>
+		</ul>
+		
+		I personally found it confusing jumping back and forth between different registers and GPIO pins, and found it easier to keep track with laminated paper and whiteboard markers, especially when tracking down which register needed to be assigned within the actual ladder logic diagram, and when they are remapped.
+		<div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin: 20px 0;">
+			<img src="diagram1.jpg" alt="placeholder" style="width: 45%; height: auto; display: block;">
+			<img src="diagram2.jpg" alt="placeholder" style="width: 45%; height: auto; display: block;">
+			<img src="diagram3.jpg" alt="placeholder" style="width: 45%; height: auto; display: block;">
+		</div>
+		
+		Below shows the final ladder logic diagram and assigned variables, including their locations. Notice the highlighted area, and their corresponding locations. The two buttons and LED each have an assigned variable, but are different than the temperature and humidity data received from the RTU.
+		</br></br>
+		<img src="openplc_edit.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		Finally, once the new ladder logic code is uploaded and compiled on the PLC, the client RTU device can be added. Ensure to match all the settings (baudrate, parity, etc) if you followed up to this point, specifically for storing the temperature and humidity. The biggest difference will be what you are sending to the holding registers, which in my case was the humidity and temperature.
+		</br></br>
+		<img src="openplc_client_edit.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		If there is no ladder logic compilation issues, you still might get connection timeouts. Check your voltage divider at that point, and trace some steps back. Successful polls will result in the two defined variables populated with live (but slightly inaccurate) temperature and humidity data, as can be seen below:
+		</br></br>
+		<img src="openplc_results.png" alt="Placeholder image" style="width: 160%; display: block; margin: 0 auto;">
+		</br></br>
+		Divide the variables by 10, and you have the values in decimal format.
+		
+		<h2> Summary of Project and Insights </h2>
+		In the beginning of my post, I said this project started with a simple question. As is often the case, the processes that happen in the background are much more complex than we originally assume them to be.
+		This project surprised me on a couple of fronts. The reason why many industrial sites opt to use RS485 is its ruggedized nature and distance capabilities. Under optimal conditions, you can achieve up to 1200 meters of twisted pair communication, and that's entirely without relying on TCP/IP.
+		</br></br>
+		This exercise proved to be incredibly valuable in understanding the internal workings of a PLC, at least from the perspective of simple memory operations. From a security standpoint, because the read-only input registers can only be updated by a physical connection (or local logic), they aren't actually modifiable by external Modbus network operations in the same way that an output coil like <code>%QX0.2</code> might be. Of course, this baseline configuration is far from secure, but it perfectly demonstrates the critical difference between processes that can be interacted with remotely and those that cannot. At least, not through Modbus directly!
+		</br></br>
+		
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <strong>Elysee Franchuk</strong> (kva55). All rights reserved.</p>
+    </footer>
+</body>
+</html>
